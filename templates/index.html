@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            const uploadImage = () => {
+               
+                console.log('there')
+                const files = $('#upload_image')[0].files[0];        
+                if(files){
+                    let reader = new FileReader();
+                        reader.onload =  (e) => {
+                        $('#input_image').attr('src', e.target.result);
+                        
+                    }
+                    reader.readAsDataURL(files);
+                    const formData = new FormData();
+                    formData.append('image',files);
+                    $.ajax({
+                        type:'post',
+                        url:'/upload',
+                        processData: false,
+                        contentType: false,
+                        data:formData,
+                        success:(data)=>{
+                           $('#output_image').attr('src','data:image/jpeg;base64,' + data.resultImage)
+                           $('#output_result').text(data.message)
+                        },
+                        error:(error)=>{
+                            console.log(error);
+                        }
+                    })
+                }
+            }
+            $(window).on("load",()=>{
+               $('#upload_image').on('change',uploadImage)
+             
+                console.log('set image event')
+            })
+        </script>
+    </head>
+    <body>
+        <div style="display: flex;flex-direction: column;">
+            <input  type="file" accept="image/*" id="upload_image" value="이미지 입력" />
+            <div style="display: flex;flex-direction: column;">
+                <h4>입력 이미지</h4>
+                <img id="input_image" style="width:30%;height:30%" />
+            </div>
+            <div style="display: flex;flex-direction: column;">
+                <h4>결과 이미지</h4>
+                <img id="output_image" style="width:30%;height:30%" />
+                <p id="output_result"></p>
+            </div>
+        </div>
+    </body>
+</html>
