@@ -1,18 +1,19 @@
 from flask import Flask,render_template,request,jsonify,Response
-import detect
+# import detect
 import cv2
 import base64
 from torchvision import transforms
 from io import BytesIO
 import torch
 from PIL import Image
-import numpy as np
+import numpy
+from ultralytics import YOLO
 from flask_socketio import SocketIO, send,emit
 import io
 
 app = Flask(__name__)
 socketio = SocketIO(app)
-model = detect.load_model('./best.pt')
+model = YOLO('./best-custom.pt')
 # model = torch.hub.load('.', 'custom', path='./best.pt', source='local')
 
 modelVideo = torch.hub.load('.', 'custom', path='./best.pt', source='local')
@@ -56,12 +57,24 @@ def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 @app.route('/upload',methods=['POST'])
 def uploadImage () :
-    image = request.files['image']
-    image.save('tmp.jpg')
-    proceedImage = detect.detect(source='./tmp.jpg', model= model)
-    retval, buffer = cv2.imencode('.jpg', proceedImage[0][0])
-    encodeImage = base64.b64encode(buffer).decode('utf-8')
-    return jsonify({'resultImage':encodeImage,'message':str(proceedImage[0][1])})
+
+    # proceedImage = detect.detect(source='./tmp.jpg', model= model)
+    image_file = request.files["image"]
+    image_bytes = image_file.read()
+
+    img = Image.open(io.BytesIO(image_bytes))
+    proceedImage = model(img)
+    # message = proceedImage.pandas().xyxy[0].to_json(orient='records')
+    message = proceedImage[0].tojson()
+    # retval, buffer = cv2.imencode('.jpg', proceedImage[0][0])
+    # encodeImage = base64.b64encode(buffer).decode('utf-8')
+
+    # proceedImage[0].render()
+    buffered = BytesIO()
+    im_base64 = Image.fromarray(proceedImage[0].orig_img)
+    im_base64.save(buffered, format="JPEG")
+    ret = base64.b64encode(buffered.getvalue()).decode('utf-8')
+    return jsonify({'resultImage':ret,'message':str(message)})
 
 @socketio.on('connect', namespace='/live')
 def socket_connect():
@@ -85,10 +98,9 @@ def socket_live(message):
     image = message['data']
     imgdata = base64.b64decode(image.split('base64,')[1])
     im = Image.open(io.BytesIO(imgdata))
-    results = modelVideo(im)
-    results.render()
+    proceedImage = model(im)
     buffered = BytesIO()
-    im_base64 = Image.fromarray(results.ims[0])
+    im_base64 = Image.fromarray(proceedImage[0].orig_img)
     im_base64.save(buffered, format="JPEG")
     ret = base64.b64encode(buffered.getvalue()).decode('utf-8')
     emit('ret_stream',{'data':ret})

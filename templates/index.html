@@ -23,6 +23,7 @@
                         contentType: false,
                         data:formData,
                         success:(data)=>{
+                           console.log(data)
                            $('#output_image').attr('src','data:image/jpeg;base64,'+data.resultImage)
                            $('#output_result').text(data.message)
                         },
@@ -66,7 +67,7 @@
               canvas = document.createElement('canvas')
               video = document.getElementById('videoElement');
 
-                if (navigator.mediaDevices.getUserMedia) {
+                if (navigator.mediaDevices.getUserMedia && false) {
                     navigator.mediaDevices.getUserMedia({ video: {facingMode:'environment'} })
                         .then( (stream) => {
                             if(video){
