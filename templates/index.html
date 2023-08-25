@@ -62,7 +62,7 @@
 
             $(window).on("load",()=>{
                $('#upload_image').on('change',uploadImage)
-
+<!--                비디오 비활성화시 66 ~ 82 줄까지 주석처리-->
               canvas = document.createElement('canvas')
               video = document.getElementById('videoElement');
 
@@ -80,7 +80,6 @@
                           return;
                         });
                 };
-                console.log('set image event')
             })
         </script>
     </head>
