@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+        <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+        <script>
+            const uploadImage = () => {
+                const files = $('#upload_image')[0].files[0];        
+                if(files){
+                    let reader = new FileReader();
+                        reader.onload =  (e) => {
+                        $('#input_image').attr('src', e.target.result);
+                        
+                    }
+                    reader.readAsDataURL(files);
+                    const formData = new FormData();
+                    formData.append('image',files);
+                    $.ajax({
+                        type:'post',
+                        url:'/upload',
+                        processData: false,
+                        contentType: false,
+                        data:formData,
+                        success:(data)=>{
+                           $('#output_image').attr('src','data:image/jpeg;base64,'+data.resultImage)
+                           $('#output_result').text(data.message)
+                        },
+                        error:(error)=>{
+                            console.log(error);
+                        }
+                    })
+                }
+            }
+          ;
+          console.log('http://' + document.domain +  (location.port?(':'+location.port):'') + '/live')
+             let socket = io.connect('http://' + document.domain +  (location.port?(':'+location.port):'') + '/live');
+                socket.on('ret_stream',(event)=>{
+
+                    const ret = $('#ret_image');
+                    ret.attr('src','data:image/jpeg;base64,'+event.data)
+              })
+              let canvas
+              let video
+              let retImage
+            function record() {
+              /* Go live */
+              var ctx = canvas.getContext('2d');
+              var CANVAS_HEIGHT = canvas.height;
+              var CANVAS_WIDTH = canvas.width;
+
+
+
+              function sendVideoFrame_() {
+                ctx.drawImage(video, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+                socket.emit('livevideo', { data: canvas.toDataURL('image/jpeg', 0.7) });
+               };
+
+              setInt = setInterval(function(){sendVideoFrame_()}, 1000);
+
+            };
+
+            $(window).on("load",()=>{
+               $('#upload_image').on('change',uploadImage)
+<!--                비디오 비활성화시 66 ~ 82 줄까지 주석처리-->
+<!--              canvas = document.createElement('canvas')-->
+<!--              video = document.getElementById('videoElement');-->
+
+<!--                if (navigator.mediaDevices.getUserMedia) {-->
+<!--                    navigator.mediaDevices.getUserMedia({ video: {facingMode:'environment'} })-->
+<!--                        .then( (stream) => {-->
+<!--                            if(video){-->
+<!--                               video.srcObject = stream;-->
+<!--                                record()-->
+<!--                            }-->
+<!--                        })-->
+<!--                        .catch(function (error) {-->
+<!--                          console.log("Something went wrong!");-->
+<!--                          console.log(error);-->
+<!--                          return;-->
+<!--                        });-->
+<!--                };-->
+            })
+        </script>
+    </head>
+    <body>
+        <div style="display: flex;flex-direction: column;">
+            <input  type="file" accept="image/*" id="upload_image" value="이미지 입력" />
+            <div style="display: flex;flex-direction: column;">
+                <h4>입력 이미지</h4>
+                <img id="input_image" style="width:30%;height:30%" />
+            </div>
+            <div style="display: flex;flex-direction: column;">
+                <h4>결과 이미지</h4>
+                <img id="output_image" style="width:30%;height:30%" />
+                <p id="output_result"></p>
+            </div>
+            <div style="display: flex;flex-direction: column;">
+                  <h4>비디오</h4>
+                 <video style="width:600px;height:600px" autoplay="true" id="videoElement" />
+
+            </div>
+             <img style="width:600px;height:600px"  id="ret_image" />
+        </div>
+    </body>
+</html>
