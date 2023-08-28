@@ -63,23 +63,23 @@
             $(window).on("load",()=>{
                $('#upload_image').on('change',uploadImage)
 <!--                비디오 비활성화시 66 ~ 82 줄까지 주석처리-->
-              canvas = document.createElement('canvas')
-              video = document.getElementById('videoElement');
+<!--              canvas = document.createElement('canvas')-->
+<!--              video = document.getElementById('videoElement');-->
 
-                if (navigator.mediaDevices.getUserMedia) {
-                    navigator.mediaDevices.getUserMedia({ video: {facingMode:'environment'} })
-                        .then( (stream) => {
-                            if(video){
-                               video.srcObject = stream;
-                                record()
-                            }
-                        })
-                        .catch(function (error) {
-                          console.log("Something went wrong!");
-                          console.log(error);
-                          return;
-                        });
-                };
+<!--                if (navigator.mediaDevices.getUserMedia) {-->
+<!--                    navigator.mediaDevices.getUserMedia({ video: {facingMode:'environment'} })-->
+<!--                        .then( (stream) => {-->
+<!--                            if(video){-->
+<!--                               video.srcObject = stream;-->
+<!--                                record()-->
+<!--                            }-->
+<!--                        })-->
+<!--                        .catch(function (error) {-->
+<!--                          console.log("Something went wrong!");-->
+<!--                          console.log(error);-->
+<!--                          return;-->
+<!--                        });-->
+<!--                };-->
             })
         </script>
     </head>
